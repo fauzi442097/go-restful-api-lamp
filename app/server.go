@@ -7,9 +7,9 @@ import (
 
 func Run() {
 
-	_ = ConnectDatabase()
+	db = ConnectDatabase()
 
-	server := routes.Setup()
-	server.Run(config.App["url"])
+	server := routes.Setup(db)
+	server.Run(config.App["Url"])
 
 }
