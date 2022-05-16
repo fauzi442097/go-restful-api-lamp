@@ -21,8 +21,7 @@ func NewCustomerRepository() CustomerRepository {
 func (r *customerRepositoryImpl) GetById(customerId uint, tx *gorm.DB) (models.Customer, error) {
 
 	customer := models.Customer{}
-	// err := tx.First(&customer, customerId).Error
 	err := tx.Where("id = ?", customerId).First(&customer).Error
-
 	return customer, err
+
 }

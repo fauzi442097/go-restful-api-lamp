@@ -1,16 +1,17 @@
 package services
 
 import (
-	"fmt"
+	"go-restful-api-lamp/dto"
 	"go-restful-api-lamp/helper"
-	"go-restful-api-lamp/models"
 	"go-restful-api-lamp/repositories"
+	"go-restful-api-lamp/utils/transaction"
 
+	"github.com/mashingan/smapping"
 	"gorm.io/gorm"
 )
 
 type CustomerService interface {
-	GetById(customerId uint) models.Customer
+	GetById(customerId uint) dto.CustomerResponse
 }
 
 type customerServiceImpl struct {
@@ -26,24 +27,18 @@ func NewCustomerService(repo repositories.CustomerRepository, db *gorm.DB) Custo
 	}
 }
 
-func (service *customerServiceImpl) GetById(customerId uint) models.Customer {
+func (service *customerServiceImpl) GetById(customerId uint) dto.CustomerResponse {
 
 	// Start Transaction
 	tx := service.db.Begin()
+	defer transaction.CommitOrRollback(tx)
 
-	customer, err := service.repository.GetById(customerId, tx)
-	defer helper.CommitOrRollback(tx)
+	customerModel, err := service.repository.GetById(customerId, tx)
+	helper.PanicIfError(err)
 
-	fmt.Println("error : ", err)
-	if err != nil {
-		err := tx.Rollback().RowsAffected
-		fmt.Println("affected : ", err)
-	} else {
-		// Commit Transaction
-		da := tx.Commit().Error
-		fmt.Println("da", da)
-	}
+	customerResponse := dto.CustomerResponse{}
+	err = smapping.FillStruct(&customerResponse, smapping.MapFields(&customerModel))
+	helper.PanicIfError(err)
 
-	return customer
-	
+	return customerResponse
 }

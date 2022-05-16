@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-restful-api-lamp/controllers"
+	"go-restful-api-lamp/exception"
 	"go-restful-api-lamp/repositories"
 	"go-restful-api-lamp/services"
 
@@ -21,7 +22,11 @@ func Setup(db *gorm.DB) *gin.Engine {
 	customerService := services.NewCustomerService(customerRepository, db)
 	customerController := controllers.NewCustomerController(customerService)
 
-	route := gin.Default()
+	route := gin.New()
+
+	route.Use(gin.Logger())
+	route.Use(gin.CustomRecovery(exception.ErrorHandler))
+
 	route.GET("/customers/:customerId", customerController.GetById)
 
 	return route
