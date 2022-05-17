@@ -7,6 +7,7 @@ import (
 	"go-restful-api-lamp/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
@@ -16,10 +17,10 @@ import (
 // 	customerController = controllers.NewCustomerController(customerService)
 // )
 
-func Setup(db *gorm.DB) *gin.Engine {
+func Setup(db *gorm.DB, validator *validator.Validate) *gin.Engine {
 
 	customerRepository := repositories.NewCustomerRepository()
-	customerService := services.NewCustomerService(customerRepository, db)
+	customerService := services.NewCustomerService(customerRepository, db, validator)
 	customerController := controllers.NewCustomerController(customerService)
 
 	route := gin.New()
@@ -27,7 +28,10 @@ func Setup(db *gorm.DB) *gin.Engine {
 	route.Use(gin.Logger())
 	route.Use(gin.CustomRecovery(exception.ErrorHandler))
 
+	route.GET("/customers", customerController.GetAll)
+	route.POST("/customers", customerController.Create)
 	route.GET("/customers/:customerId", customerController.GetById)
+	route.DELETE("/customers/:customerId", customerController.DeleteById)
 
 	return route
 }

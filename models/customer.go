@@ -7,7 +7,7 @@ type Customer struct {
 	FullName      string  `gorm:"type:varchar(200)"`
 	KTPNo         string  `gorm:"varchar(50)"`
 	Address       *string `gorm:"type:varchar(255)"`
-	IdWilayah     int
+	IdWilayah     *int
 	HpNo          *string `gorm:"type:varchar(50)"`
 	OfficeName    *string `gorm:"type:varchar(255)"`
 	JobTittle     *string `gorm:"type:varchar(100)"`
@@ -26,7 +26,7 @@ type Customer struct {
 	MerchantId    *uint
 	CIF           *string `gorm:"type:varchar(15)"`
 	Sallary       *float32
-	NIP           *string `gorm:"type:varchar(255)"`
+	Nip           *string `gorm:"type:varchar(255)"`
 	IsPotensi     *bool
 	OfficeCode    *string `gorm:"type:varchar(20)"`
 	UploadTypeId  *uint

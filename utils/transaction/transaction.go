@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"fmt"
 	"go-restful-api-lamp/helper"
 
 	"gorm.io/gorm"
@@ -13,9 +14,8 @@ func CommitOrRollback(tx *gorm.DB) {
 		helper.PanicIfError(errorRollback)
 		panic(err)
 	} else {
+		fmt.Println("commit")
 		errorCommit := tx.Commit().Error
 		helper.PanicIfError(errorCommit)
-
-		panic(err)
 	}
 }
