@@ -10,6 +10,7 @@ import (
 func CommitOrRollback(tx *gorm.DB) {
 	err := recover()
 	if err != nil {
+		fmt.Println("rollback")
 		errorRollback := tx.Rollback().Error
 		helper.PanicIfError(errorRollback)
 		panic(err)

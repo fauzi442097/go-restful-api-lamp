@@ -23,10 +23,16 @@ func Setup(db *gorm.DB, validator *validator.Validate) *gin.Engine {
 	customerService := services.NewCustomerService(customerRepository, db, validator)
 	customerController := controllers.NewCustomerController(customerService)
 
+	authRepository := repositories.NewAuthRepository()
+	authService := services.NewAuthService(authRepository, db, validator)
+	authController := controllers.NewAuthController(authService)
+
 	route := gin.New()
 
 	route.Use(gin.Logger())
 	route.Use(gin.CustomRecovery(exception.ErrorHandler))
+
+	route.POST("/users/login", authController.Login)
 
 	route.GET("/customers", customerController.GetAll)
 	route.POST("/customers", customerController.Create)

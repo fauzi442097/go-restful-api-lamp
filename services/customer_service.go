@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"go-restful-api-lamp/dto"
 	"go-restful-api-lamp/helper"
 	"go-restful-api-lamp/models"
@@ -92,7 +91,6 @@ func (service *customerServiceImpl) Create(customer dto.CustomerRequest) {
 	defer transaction.CommitOrRollback(tx)
 
 	cust := customer
-	fmt.Println(smapping.MapFields(&cust))
 
 	customerModel := models.Customer{}
 	err = smapping.FillStruct(&customerModel, smapping.MapFields(&cust))

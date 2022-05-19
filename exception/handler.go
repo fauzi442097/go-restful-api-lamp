@@ -2,6 +2,7 @@ package exception
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 
@@ -13,6 +14,8 @@ import (
 )
 
 func ErrorHandler(c *gin.Context, recovered interface{}) {
+
+	fmt.Println("Tipe data : ", reflect.TypeOf(recovered))
 
 	var err string
 	validationErrors, isValidationError := recovered.(validator.ValidationErrors)
@@ -40,6 +43,13 @@ func ErrorHandler(c *gin.Context, recovered interface{}) {
 
 		if isNotFound := errors.Is(recovered.(error), gorm.ErrRecordNotFound); isNotFound {
 			ResponseJson.NotFound(c, err)
+			return
+		}
+
+		//type assertion
+		e, ok := recovered.(*ErrorUnauthenticated)
+		if ok {
+			ResponseJson.Error(c, http.StatusUnauthorized, e.message, nil)
 			return
 		}
 
