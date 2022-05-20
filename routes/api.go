@@ -3,6 +3,7 @@ package routes
 import (
 	"go-restful-api-lamp/controllers"
 	"go-restful-api-lamp/exception"
+	"go-restful-api-lamp/middleware"
 	"go-restful-api-lamp/repositories"
 	"go-restful-api-lamp/services"
 
@@ -31,13 +32,13 @@ func Setup(db *gorm.DB, validator *validator.Validate) *gin.Engine {
 
 	route.Use(gin.Logger())
 	route.Use(gin.CustomRecovery(exception.ErrorHandler))
-
 	route.POST("/users/login", authController.Login)
 
-	route.GET("/customers", customerController.GetAll)
-	route.POST("/customers", customerController.Create)
-	route.GET("/customers/:customerId", customerController.GetById)
-	route.DELETE("/customers/:customerId", customerController.DeleteById)
+	authorized := route.Use(middleware.JwtMiddleware)
+	authorized.GET("/customers", customerController.GetAll)
+	authorized.POST("/customers", customerController.Create)
+	authorized.GET("/customers/:customerId", customerController.GetById)
+	authorized.DELETE("/customers/:customerId", customerController.DeleteById)
 
 	return route
 }

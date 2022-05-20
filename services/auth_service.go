@@ -1,17 +1,13 @@
 package services
 
 import (
-	"go-restful-api-lamp/config"
 	"go-restful-api-lamp/dto"
 	"go-restful-api-lamp/exception"
 	"go-restful-api-lamp/helper"
 	"go-restful-api-lamp/models"
 	"go-restful-api-lamp/repositories"
 	"go-restful-api-lamp/utils/transaction"
-	"strconv"
-	"time"
 
-	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/go-playground/validator/v10"
 	"github.com/mashingan/smapping"
 	"golang.org/x/crypto/bcrypt"
@@ -65,26 +61,8 @@ func (service *AuthServiceImpl) Login(userRequest dto.LoginRequest) dto.LoginRes
 		panic(exception.NewErrorUnauthenticated("Username atau Password salah"))
 	}
 
-	jwtExpired, err := strconv.ParseInt(config.JwtExpiredAt, 10, 64)
-	helper.PanicIfError(err)
-
-	expirationTime := time.Now().Add(time.Minute * time.Duration(jwtExpired)).Unix()
-
-	// create object claims
-	claims := models.Claims{
-		Username: user.Username,
-		Email:    user.Email,
-		StandardClaims: jwt.StandardClaims{
-			Issuer:    config.Issuer,
-			ExpiresAt: jwt.NewTime(float64(expirationTime)),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Create the JWT string
-	tokenString, err := token.SignedString([]byte(config.Secret))
-	helper.PanicIfError(err)
+	// Generate Token JWT
+	token, claims := GenerateToken(user)
 
 	// parsing to dto.user response
 	userResponse := dto.UserResponse{}
@@ -92,10 +70,10 @@ func (service *AuthServiceImpl) Login(userRequest dto.LoginRequest) dto.LoginRes
 	helper.PanicIfError(err)
 
 	dataResponse := dto.LoginResponse{
-		User:  userResponse,
-		Token: tokenString,
+		User:         userResponse,
+		Token:        token,
+		TokenExpired: claims.StandardClaims.ExpiresAt,
 	}
 
 	return dataResponse
-
 }
