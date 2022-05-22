@@ -27,7 +27,7 @@ func JwtMiddleware(c *gin.Context) {
 	_, errToken := services.ValidateToken(token, &claims)
 
 	if errToken != nil {
-		ResponseJson.Error(c, http.StatusBadRequest, errToken.Error(), nil)
+		ResponseJson.Error(c, http.StatusUnauthorized, errToken.Error(), nil)
 		c.Abort()
 	}
 

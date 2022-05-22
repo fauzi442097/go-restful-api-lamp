@@ -12,6 +12,7 @@ import (
 
 type AuthController interface {
 	Login(c *gin.Context)
+	Register(c *gin.Context)
 }
 
 type AuthControllerImpl struct {
@@ -31,4 +32,19 @@ func (controller *AuthControllerImpl) Login(c *gin.Context) {
 	data := controller.service.Login(credential)
 
 	ResponseJson.Success(c, http.StatusOK, nil, data)
+}
+
+func (controller *AuthControllerImpl) Register(c *gin.Context) {
+
+	userRegister := dto.RegisterRequest{}
+	err := c.ShouldBindJSON(&userRegister)
+	helper.PanicIfError(err)
+
+	err = controller.service.Register(userRegister)
+	if err != nil {
+		ResponseJson.Error(c, http.StatusInternalServerError, err.Error(), nil)
+	}
+
+	ResponseJson.Success(c, http.StatusOK, "Success Registered", nil)
+
 }

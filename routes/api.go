@@ -33,6 +33,7 @@ func Setup(db *gorm.DB, validator *validator.Validate) *gin.Engine {
 	route.Use(gin.Logger())
 	route.Use(gin.CustomRecovery(exception.ErrorHandler))
 	route.POST("/users/login", authController.Login)
+	route.POST("/users/register", authController.Register)
 
 	authorized := route.Use(middleware.JwtMiddleware)
 	authorized.GET("/customers", customerController.GetAll)

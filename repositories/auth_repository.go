@@ -9,6 +9,7 @@ import (
 type AuthRepository interface {
 	Login(tx *gorm.DB, user models.User) (models.User, error)
 	Register(tx *gorm.DB, user models.User) error
+	GetLastId(tx *gorm.DB) (models.User, error)
 }
 
 type AuthRepositoryImpl struct {
@@ -31,4 +32,11 @@ func (r *AuthRepositoryImpl) Register(tx *gorm.DB, user models.User) error {
 
 	err := tx.Create(&user).Error
 	return err
+}
+
+func (r *AuthRepositoryImpl) GetLastId(tx *gorm.DB) (models.User, error) {
+
+	userModel := models.User{}
+	return userModel, tx.Last(&userModel).Error
+
 }

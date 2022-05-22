@@ -16,6 +16,7 @@ import (
 
 type AuthService interface {
 	Login(user dto.LoginRequest) dto.LoginResponse
+	Register(userRegister dto.RegisterRequest) error
 }
 
 type AuthServiceImpl struct {
@@ -62,7 +63,7 @@ func (service *AuthServiceImpl) Login(userRequest dto.LoginRequest) dto.LoginRes
 	}
 
 	// Generate Token JWT
-	token, claims := GenerateToken(user)
+	tokenMap, _ := GenerateToken(user)
 
 	// parsing to dto.user response
 	userResponse := dto.UserResponse{}
@@ -71,9 +72,45 @@ func (service *AuthServiceImpl) Login(userRequest dto.LoginRequest) dto.LoginRes
 
 	dataResponse := dto.LoginResponse{
 		User:         userResponse,
-		Token:        token,
-		TokenExpired: claims.StandardClaims.ExpiresAt,
+		Token:        tokenMap["access_token"],
+		RefreshToken: tokenMap["refresh_token"],
 	}
 
 	return dataResponse
+}
+
+func (service *AuthServiceImpl) Register(userRegister dto.RegisterRequest) error {
+
+	// Validasi
+	err := service.Validate.Struct(&userRegister)
+	helper.PanicIfError(err)
+
+	// Start Trasaction
+	tx := service.db.Begin()
+	defer transaction.CommitOrRollback(tx)
+
+	// Get Last User
+	lastUserModel := models.User{}
+	lastUserModel, err = service.repository.GetLastId(tx)
+	helper.PanicIfError(err)
+
+	defaultPassword, _ := bcrypt.GenerateFromPassword([]byte("welcome1"), 10)
+
+	// Parse dto to models users
+	userModel := models.User{
+		ID:       lastUserModel.ID + 1,
+		UserCode: helper.RandomString(5),
+		IsActive: func() *bool {
+			b := true
+			return &b
+		}(),
+		Password: string(defaultPassword),
+	}
+	err = smapping.FillStruct(&userModel, smapping.MapFields(&userRegister))
+	helper.PanicIfError(err)
+
+	err = service.repository.Register(tx, userModel)
+	helper.PanicIfError(err)
+
+	return err
 }
